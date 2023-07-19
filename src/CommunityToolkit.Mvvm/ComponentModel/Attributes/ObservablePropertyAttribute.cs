@@ -54,4 +54,23 @@ namespace CommunityToolkit.Mvvm.ComponentModel;
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ObservablePropertyAttribute : Attribute
 {
+    /// <summary>
+    /// Default constructor
+    /// </summary>
+    public ObservablePropertyAttribute()
+    { }
+
+    /// <summary>
+    /// Specified property name constructor
+    /// </summary>
+    /// <param name="specifiedPropertyName">Specified property name</param>
+    public ObservablePropertyAttribute(string specifiedPropertyName)
+    {
+        Specifiedpropertyname = specifiedPropertyName;
+    }
+
+    /// <summary>
+    /// Specified property name
+    /// </summary>
+    public string Specifiedpropertyname { get; } = string.Empty;
 }
