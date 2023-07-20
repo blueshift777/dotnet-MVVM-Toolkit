@@ -1301,7 +1301,8 @@ partial class ObservablePropertyGenerator
                         TypedConstant? firstConstructorArgument = constructorArguments.FirstOrDefault();
                         if (firstConstructorArgument.HasValue)
                         {
-                            return firstConstructorArgument.Value.ToString();
+                            string specifiedPropertyName = firstConstructorArgument.Value.Value.ToString();
+                            return specifiedPropertyName;
                         }
                     }
                 }

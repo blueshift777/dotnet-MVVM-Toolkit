@@ -2070,7 +2070,7 @@ public class Test_SourceGeneratorsCodegen
             
             partial class MyViewModel : ObservableObject
             {
-                [ObservableProperty(""SpecialValue"")]
+                [ObservableProperty("SpecialValue")]
                 double value;
             }
             """;
