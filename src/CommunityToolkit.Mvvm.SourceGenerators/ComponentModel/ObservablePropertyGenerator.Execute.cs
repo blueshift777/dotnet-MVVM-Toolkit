@@ -1289,6 +1289,24 @@ partial class ObservablePropertyGenerator
         /// <returns>The generated property name for <paramref name="fieldSymbol"/>.</returns>
         public static string GetGeneratedPropertyName(IFieldSymbol fieldSymbol)
         {
+            if (fieldSymbol?.GetAttributes().Any() == true)
+            {
+                ImmutableArray<AttributeData> attributeDataSet = fieldSymbol.GetAttributes();
+                AttributeData? firstAttributeData = attributeDataSet.FirstOrDefault();
+                if (firstAttributeData != null)
+                {
+                    ImmutableArray<TypedConstant> constructorArguments = firstAttributeData.ConstructorArguments;
+                    if (constructorArguments.Any() == true)
+                    {
+                        TypedConstant? firstConstructorArgument = constructorArguments.FirstOrDefault();
+                        if (firstConstructorArgument.HasValue)
+                        {
+                            return firstConstructorArgument.Value.ToString();
+                        }
+                    }
+                }
+            }
+
             string propertyName = fieldSymbol.Name;
 
             if (propertyName.StartsWith("m_"))
