@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
@@ -1301,25 +1302,38 @@ partial class ObservablePropertyGenerator
                         TypedConstant? firstConstructorArgument = constructorArguments.FirstOrDefault();
                         if (firstConstructorArgument.HasValue)
                         {
-                            string specifiedPropertyName = firstConstructorArgument.Value.Value.ToString();
+                            string specifiedPropertyName = firstConstructorArgument.Value.Value!.ToString();
                             return specifiedPropertyName;
                         }
                     }
                 }
             }
 
-            string propertyName = fieldSymbol.Name;
+            string? propertyName = fieldSymbol?.Name;
 
-            if (propertyName.StartsWith("m_"))
+            if (propertyName?.StartsWith("m_") == true)
             {
                 propertyName = propertyName.Substring(2);
             }
-            else if (propertyName.StartsWith("_"))
+            else if (propertyName?.StartsWith("_") == true)
             {
                 propertyName = propertyName.TrimStart('_');
             }
 
-            return $"{char.ToUpper(propertyName[0], CultureInfo.InvariantCulture)}{propertyName.Substring(1)}";
+            return GetObservablePropertyName(propertyName);
+        }
+
+        private static string GetObservablePropertyName(string? propertyName)
+        {
+            if (string.IsNullOrWhiteSpace(propertyName))
+            {
+                return string.Empty;
+            }
+
+            char firstCharacterUpperCase = char.ToUpper(propertyName![0], CultureInfo.InvariantCulture);
+            string nameAfterFirstCharacter = propertyName[1..];
+            string observablePropertyName = string.Concat(firstCharacterUpperCase, nameAfterFirstCharacter);
+            return observablePropertyName;
         }
     }
 }

@@ -66,11 +66,11 @@ public sealed class ObservablePropertyAttribute : Attribute
     /// <param name="specifiedPropertyName">Specified property name</param>
     public ObservablePropertyAttribute(string specifiedPropertyName)
     {
-        Specifiedpropertyname = specifiedPropertyName;
+        SpecifiedPropertyName = specifiedPropertyName;
     }
 
     /// <summary>
     /// Specified property name
     /// </summary>
-    public string Specifiedpropertyname { get; } = string.Empty;
+    public string SpecifiedPropertyName { get; } = string.Empty;
 }
