@@ -1040,6 +1040,39 @@ public partial class Test_ObservablePropertyAttribute
         Assert.IsTrue(model.IsReadOnly);
     }
 
+    // See https://github.com/CommunityToolkit/dotnet/issues/711
+    [TestMethod]
+    public void Test_ObservableProperty_ModelWithDependentPropertyAndPropertyChanging()
+    {
+        ModelWithDependentPropertyAndPropertyChanging model = new();
+
+        List<string> changingArgs = new();
+        List<string> changedArgs = new();
+
+        model.PropertyChanging += (s, e) => changingArgs.Add(e.PropertyName);
+        model.PropertyChanged += (s, e) => changedArgs.Add(e.PropertyName);
+
+        model.Name = "Bob";
+
+        CollectionAssert.AreEqual(new[] { nameof(ModelWithDependentPropertyAndPropertyChanging.Name), nameof(ModelWithDependentPropertyAndPropertyChanging.FullName) }, changingArgs);
+        CollectionAssert.AreEqual(new[] { nameof(ModelWithDependentPropertyAndPropertyChanging.Name), nameof(ModelWithDependentPropertyAndPropertyChanging.FullName) }, changedArgs);
+    }
+
+    // See https://github.com/CommunityToolkit/dotnet/issues/711
+    [TestMethod]
+    public void Test_ObservableProperty_ModelWithDependentPropertyAndNoPropertyChanging()
+    {
+        ModelWithDependentPropertyAndNoPropertyChanging model = new();
+
+        List<string> changedArgs = new();
+
+        model.PropertyChanged += (s, e) => changedArgs.Add(e.PropertyName);
+
+        model.Name = "Alice";
+
+        CollectionAssert.AreEqual(new[] { nameof(ModelWithDependentPropertyAndNoPropertyChanging.Name), nameof(ModelWithDependentPropertyAndNoPropertyChanging.FullName) }, changedArgs);
+    }
+
 #if NET6_0_OR_GREATER
     [TestMethod]
     public void Test_ObservableProperty_MemberNotNullAttributeIsPresent()
@@ -1050,6 +1083,23 @@ public partial class Test_ObservablePropertyAttribute
         CollectionAssert.AreEqual(new[] { nameof(ModelWithNonNullableObservableProperty.name) }, attribute.Members);
     }
 #endif
+
+    // See https://github.com/CommunityToolkit/dotnet/issues/731
+    [TestMethod]
+    public void Test_ObservableProperty_ForwardedAttributesWithNegativeValues()
+    {
+        Assert.AreEqual(PositiveEnum.Something,
+            typeof(ModelWithForwardedAttributesWithNegativeValues)
+            .GetProperty(nameof(ModelWithForwardedAttributesWithNegativeValues.Test2))!
+            .GetCustomAttribute<DefaultValueAttribute>()!
+            .Value);
+
+        Assert.AreEqual(NegativeEnum.Problem,
+            typeof(ModelWithForwardedAttributesWithNegativeValues)
+            .GetProperty(nameof(ModelWithForwardedAttributesWithNegativeValues.Test3))!
+            .GetCustomAttribute<DefaultValueAttribute>()!
+            .Value);
+    }
 
     public abstract partial class BaseViewModel : ObservableObject
     {
@@ -1693,4 +1743,58 @@ public partial class Test_ObservablePropertyAttribute
         internal string name;
     }
 #endif
+
+    private partial class ModelWithForwardedAttributesWithNegativeValues : ObservableObject
+    {
+        [ObservableProperty]
+        private bool _test1;
+
+        [ObservableProperty]
+        [property: DefaultValue(PositiveEnum.Something)]
+        private PositiveEnum _test2;
+
+        [ObservableProperty]
+        [property: DefaultValue(NegativeEnum.Problem)]
+        private NegativeEnum _test3;
+
+        [ObservableProperty]
+        private int _test4;
+
+        public ModelWithForwardedAttributesWithNegativeValues()
+        {
+            Test1 = true;
+            Test2 = PositiveEnum.Else;
+        }
+    }
+
+    public enum PositiveEnum
+    {
+        Something = 0,
+        Else = 1
+    }
+
+    public enum NegativeEnum
+    {
+        Problem = -1,
+        OK = 0
+    }
+    
+    private sealed partial class ModelWithDependentPropertyAndPropertyChanging : ObservableObject
+    {
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FullName))]
+        private string? name;
+
+        public string? FullName => "";
+    }
+
+    [INotifyPropertyChanged(IncludeAdditionalHelperMethods = false)]
+    private sealed partial class ModelWithDependentPropertyAndNoPropertyChanging
+    {
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FullName))]
+        private string? name;
+
+        public string? FullName => "";
+    }
 }
